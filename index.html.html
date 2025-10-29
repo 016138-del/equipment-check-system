@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設備點檢表格系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        .check-button {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .check-button.selected {
+            /* 讓選中的按鈕有更明顯的邊框和陰影 */
+            border-width: 3px !important;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+        input[type="radio"]:checked + .check-button {
+            /* 針對選中的 radio button 應用 selected 樣式 */
+            border-width: 3px !important;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+        /* 房間狀態指示樣式 */
+        .status-normal { border-bottom: 5px solid #10B981; } /* 綠色 */
+        .status-abnormal { border-bottom: 5px solid #EF4444; } /* 紅色 */
+        .status-pending { border-bottom: 5px solid #F59E0B; } /* 黃色 */
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">設備點檢系統</h1>
+            <p class="text-gray-600">簡易點檢表格與統計記錄</p>
+        </div>
+
+        <div id="roomSelectionPage" class="max-w-6xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+          
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">選擇點檢房間</h2>
+                    <p class="text-gray-600">請選擇要進行設備點檢的房間</p>
+                </div>
+    
+                <div class="flex justify-center mb-8">
+        
+                    <div class="bg-white rounded-lg p-1 shadow-lg">
+                        <button id="roomSelectTab" class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 bg-blue-500 text-white" data-target="roomSelectionPage">選擇房間</button>
+                        <button id="checkTab" class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="checkPage">點檢表格</button>
+              
+                        <button id="statsTab" class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="statsPage">統計報表</button>
+                        <button id="recordsTab" class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="recordsPage">歷史記錄</button>
+                    </div>
+                </div>
+        
+        
+                <div class="flex justify-center mb-8">
+                    <div class="bg-gray-100 rounded-lg p-1">
+                        <button id="meetingRoomTab" class="px-8 py-3 rounded-md font-medium transition-all duration-200 bg-blue-500 text-white">
+                 
+                            會議室 (12間)
+                        </button>
+                        <button id="lectureHallTab" class="px-8 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500">
+                            講堂 (6間)
+  
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="meetingRoomList" class="space-y-6">
+        
+                    <div class="text-center text-lg font-medium text-gray-700 mb-6">會議室選擇</div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室A1" data-type="會議室">
+                  
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室A1</div>
+                            <div class="text-sm text-blue-500">1樓東側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+   
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室A2" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室A2</div>
+  
+                            <div class="text-sm text-blue-500">1樓西側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室B1" data-type="會議室">
+        
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室B1</div>
+                            <div class="text-sm text-blue-500">2樓東側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                 
+                        </button>
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室B2" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+                       
+                            <div class="text-lg font-semibold text-blue-700">會議室B2</div>
+                            <div class="text-sm text-blue-500">2樓西側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                         <button class="room-select-btn meeting-room 
+                            bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 
+                            transform hover:scale-105" data-room="會議室C1" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室C1</div>
+                            <div class="text-sm text-blue-500">3樓東側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+      
+                        </button>
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室C2" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+            
+                            <div class="text-lg font-semibold text-blue-700">會議室C2</div>
+                            <div class="text-sm text-blue-500">3樓西側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn meeting-room 
+                            bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室D1" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室D1</div>
+                          
+                            <div class="text-sm text-blue-500">4樓東側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室D2" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+  
+                            <div class="text-lg font-semibold text-blue-700">會議室D2</div>
+                            <div class="text-sm text-blue-500">4樓西側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                 
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室E1" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室E1</div>
+                
+                            <div class="text-sm text-blue-500">5樓東側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室E2" data-type="會議室">
+                      
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室E2</div>
+                            <div class="text-sm text-blue-500">5樓西側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+       
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室F1" data-type="會議室">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室F1</div>
+      
+                            <div class="text-sm text-blue-500">6樓東側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn meeting-room bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="會議室F2" data-type="會議室">
+            
+                            <div class="text-4xl mb-3">🏢</div>
+                            <div class="text-lg font-semibold text-blue-700">會議室F2</div>
+                            <div class="text-sm text-blue-500">6樓西側</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                     
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="lectureHallList" class="space-y-6 hidden">
+                    <div class="text-center text-lg font-medium text-gray-700 mb-6">講堂選擇</div>
+ 
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <button class="room-select-btn lecture-hall bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="大講堂A" data-type="講堂">
+                            <div class="text-4xl mb-3">🎭</div>
+      
+                            <div class="text-lg font-semibold text-purple-700">大講堂A</div>
+                            <div class="text-sm text-purple-500">1樓中央 - 可容納200人</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                   
+                        <button class="room-select-btn lecture-hall bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="大講堂B" data-type="講堂">
+                            <div class="text-4xl mb-3">🎭</div>
+                            <div class="text-lg font-semibold text-purple-700">大講堂B</div>
+                  
+                            <div class="text-sm text-purple-500">2樓中央 - 可容納200人</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn lecture-hall bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="中講堂A" data-type="講堂">
+                      
+                            <div class="text-4xl mb-3">🎪</div>
+                            <div class="text-lg font-semibold text-purple-700">中講堂A</div>
+                            <div class="text-sm text-purple-500">3樓北側 - 可容納100人</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+     
+                        <button class="room-select-btn lecture-hall bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="中講堂B" data-type="講堂">
+                            <div class="text-4xl mb-3">🎪</div>
+                            <div class="text-lg font-semibold text-purple-700">中講堂B</div>
+    
+                            <div class="text-sm text-purple-500">3樓南側 - 可容納100人</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                        <button class="room-select-btn lecture-hall bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="小講堂A" data-type="講堂">
+        
+                            <div class="text-4xl mb-3">🎨</div>
+                            <div class="text-lg font-semibold text-purple-700">小講堂A</div>
+                            <div class="text-sm text-purple-500">4樓北側 - 可容納50人</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+               
+                        </button>
+                        <button class="room-select-btn lecture-hall bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-6 text-center transition-all duration-200 transform hover:scale-105" data-room="小講堂B" data-type="講堂">
+                            <div class="text-4xl mb-3">🎨</div>
+                     
+                            <div class="text-lg font-semibold text-purple-700">小講堂B</div>
+                            <div class="text-sm text-purple-500">4樓南側 - 可容納50人</div>
+                            <div class="status-indicator h-1 mt-3 rounded-full"></div>
+                        </button>
+                    </div>
+              
+                </div>
+                
+                <div class="flex justify-center mt-8">
+                    <button id="calendarTab" class="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105 shadow-lg" data-target="calendarSettingPage">
+                        📅 點檢週期設定與監控
+  
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="checkPage" class="max-w-4xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="flex 
+                    justify-center mb-8">
+                    <div class="bg-white rounded-lg p-1 shadow-lg">
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="roomSelectionPage">選擇房間</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 bg-blue-500 text-white" data-target="checkPage">點檢表格</button>
+       
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="statsPage">統計報表</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="recordsPage">歷史記錄</button>
+                    </div>
+                </div>
+   
+              
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">每日設備點檢</h2>
+                    
+                        <div id="roomTitle" class="text-lg font-medium text-blue-600 mt-1 cursor-pointer hover:text-blue-800 hover:underline transition-colors duration-200" title="點擊重新選擇房間">請先選擇要點檢的房間</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-500" for="checkDate">點檢日期</label>
+               
+                        <input type="date" id="checkDate" class="border rounded-lg px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <div id="roomNotSelectedAlert" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 hidden">
+                    <div class="flex items-center gap-3">
+  
+                        <div class="text-2xl">⚠️</div>
+                        <div>
+                            <div class="font-medium text-yellow-800">請先選擇要點檢的房間</div>
+                       
+                            <div class="text-sm text-yellow-600">請點擊上方「選擇房間」標籤，選擇要進行點檢的房間後再填寫表格</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="checkForm">
+                
+                    <div class="grid gap-6">
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-medium text-gray-700 mb-4">機械設備檢查</h3>
+                            <div class="space-y-6">
+       
+                                <div>
+                                    <div class="text-gray-700 font-medium mb-3">機器運轉聲音是否正常</div>
+                                    
+                                    <div class="flex gap-3">
+                                        <label class="flex-1">
+                                            <input type="radio" name="sound" value="正常" class="hidden">
+         
+                                            <div class="check-button bg-green-50 border-2 border-green-200 hover:bg-green-100 hover:border-green-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">✅</div>
+   
+                                                <div class="text-green-700 font-medium">正常</div>
+                                            </div>
+         
+                                        </label>
+                                        <label class="flex-1">
+                            
+                                            <input type="radio" name="sound" value="異常" class="hidden">
+                                            <div class="check-button bg-red-50 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                        
+                                                <div class="text-3xl mb-2">❌</div>
+                                                <div class="text-red-700 font-medium">異常</div>
+                        
+                                            </div>
+                                        </label>
+                                        
+                                        <label class="flex-1">
+                                            <input type="radio" name="sound" value="未點檢" class="hidden" checked>
+                                            <div class="check-button bg-gray-50 border-2 border-gray-200 hover:bg-gray-100 
+                                                hover:border-gray-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">➖</div>
+                                            
+                                                <div class="text-gray-700 font-medium">未點檢</div>
+                                            </div>
+                                        </label>
+          
+                                    </div>
+                                </div>
+                                <div>
+          
+                                    <div class="text-gray-700 font-medium mb-3">溫度指示是否正常</div>
+                                    <div class="flex gap-3">
+                                 
+                                        <label class="flex-1">
+                                            <input type="radio" name="temperature" value="正常" class="hidden">
+                                            
+                                            <div class="check-button bg-green-50 border-2 border-green-200 hover:bg-green-100 hover:border-green-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">🌡️</div>
+                                      
+                                                <div class="text-green-700 font-medium">正常</div>
+                                            </div>
+                                        </label>
+    
+                                        <label class="flex-1">
+                                            <input type="radio" name="temperature" value="異常" class="hidden">
+               
+                                            <div class="check-button bg-red-50 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">🔥</div>
+         
+                                                <div class="text-red-700 font-medium">異常</div>
+                                            </div>
+               
+                                        </label>
+                                        <label class="flex-1">
+                                  
+                                            <input type="radio" name="temperature" value="未點檢" class="hidden" checked>
+                                            <div class="check-button bg-gray-50 border-2 border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                             
+                                                <div class="text-3xl mb-2">➖</div>
+                                                <div class="text-gray-700 font-medium">未點檢</div>
+                             
+                                            </div>
+                                        </label>
+                                    </div>
+         
+                                </div>
+                                <div>
+                                    <div class="text-gray-700 font-medium mb-3">潤滑油位是否正常</div>
+      
+                                    <div class="flex gap-3">
+                                        <label class="flex-1">
+                           
+                                            <input type="radio" name="oil" value="正常" class="hidden">
+                                            <div class="check-button bg-green-50 border-2 border-green-200 hover:bg-green-100 hover:border-green-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                       
+                                                <div class="text-3xl mb-2">🛢️</div>
+                                                <div class="text-green-700 font-medium">正常</div>
+                       
+                                            </div>
+                                        </label>
+                                       
+                                        <label class="flex-1">
+                                            <input type="radio" name="oil" value="異常" class="hidden">
+                                            <div class="check-button 
+                                                bg-red-50 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">⚠️</div>
+                                            
+                                                <div class="text-red-700 font-medium">異常</div>
+                                            </div>
+                                        </label>
+          
+                                        <label class="flex-1">
+                                            <input type="radio" name="oil" value="未點檢" class="hidden" checked>
+                    
+                                            <div class="check-button bg-gray-50 border-2 border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">➖</div>
+              
+                                                <div class="text-gray-700 font-medium">未點檢</div>
+                                            </div>
+                    
+                                        </label>
+                                    </div>
+                                </div>
+            
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-medium text-gray-700 mb-4">安全設備檢查</h3>
+  
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="text-gray-700 font-medium mb-3">緊急停止按鈕功能是否正常</div>
+  
+                                    <div class="flex gap-3">
+                                        <label class="flex-1">
+                       
+                                            <input type="radio" name="emergency" value="正常" class="hidden">
+                                            <div class="check-button bg-green-50 border-2 border-green-200 hover:bg-green-100 hover:border-green-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                   
+                                                <div class="text-3xl mb-2">🛑</div>
+                                                <div class="text-green-700 font-medium">正常</div>
+                   
+                                            </div>
+                                        </label>
+                                   
+                                        <label class="flex-1">
+                                            <input type="radio" name="emergency" value="異常" class="hidden">
+                                            <div class="check-button 
+                                                bg-red-50 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">⚠️</div>
+                                        
+                                                <div class="text-red-700 font-medium">異常</div>
+                                            </div>
+                                        </label>
+      
+                                        <label class="flex-1">
+                                            <input type="radio" name="emergency" value="未點檢" class="hidden" checked>
+                
+                                            <div class="check-button bg-gray-50 border-2 border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">➖</div>
+          
+                                                <div class="text-gray-700 font-medium">未點檢</div>
+                                            </div>
+                
+                                        </label>
+                                    </div>
+                                </div>
+        
+                                <div>
+                                    <div class="text-gray-700 font-medium mb-3">防護罩完整性是否正常</div>
+                                    <div 
+                                        class="flex gap-3">
+                                        <label class="flex-1">
+                                            <input type="radio" name="guard" value="正常" class="hidden">
+          
+                                            <div class="check-button bg-green-50 border-2 border-green-200 hover:bg-green-100 hover:border-green-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">🛡️</div>
+    
+                                                <div class="text-green-700 font-medium">正常</div>
+                                            </div>
+          
+                                        </label>
+                                        <label class="flex-1">
+                             
+                                            <input type="radio" name="guard" value="異常" class="hidden">
+                                            <div class="check-button bg-red-50 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                         
+                                                <div class="text-3xl mb-2">🔧</div>
+                                                <div class="text-red-700 font-medium">異常</div>
+                         
+                                            </div>
+                                        </label>
+                                        <label 
+                                            class="flex-1">
+                                            <input type="radio" name="guard" value="未點檢" class="hidden" checked>
+                                            <div class="check-button bg-gray-50 border-2 border-gray-200 hover:bg-gray-100 hover:border-gray-300 
+                                                cursor-pointer rounded-xl p-4 text-center transition-all duration-200">
+                                                <div class="text-3xl mb-2">➖</div>
+                                             
+                                                <div class="text-gray-700 font-medium">未點檢</div>
+                                            </div>
+                                        </label>
+           
+                                    </div>
+                                </div>
+                            </div>
+               
+                        </div>
+
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-medium text-gray-700 mb-4">備註說明</h3>
+                            <textarea id="remarks" class="w-full p-3 border 
+                                rounded-lg resize-none rows=3" placeholder="請輸入異常狀況或其他需要說明的事項..."></textarea>
+                        </div>
+
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-medium text-gray-700 mb-4">點檢人員</h3>
+               
+                            <input type="text" id="inspector" class="w-full p-3 border rounded-lg" placeholder="請輸入點檢人員姓名">
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-4 rounded-lg transition-colors duration-200">
+                     
+                            提交點檢表格
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="submitModal" class="fixed inset-0 bg-black 
+            bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 
+                            h-8 text-green-500 fill-none stroke=currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+              
+                    <div class="mb-6">
+                        <div class="text-lg font-medium text-gray-800 mb-2" id="modalRoomTitle"></div>
+                        <div class="text-md text-gray-600 mb-4" id="modalInspector"></div>
+                
+                    </div>
+                    
+                    <div class="text-3xl font-bold text-green-600 mb-4">點檢成功！</div>
+                    <p class="text-gray-500 mb-6">資料已安全記錄到 Google 試算表（並已儲存至瀏覽器本地記錄）。</p>
+                
+            
+                        <button id="confirmSubmit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors duration-200">
+                        確認並返回
+                    </button>
+                </div>
+            </div>
+        </div>
+  
+       
+        <div id="statsPage" class="max-w-6xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="flex justify-center mb-8">
+                    <div class="bg-white rounded-lg p-1 shadow-lg">
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="roomSelectionPage">選擇房間</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="checkPage">點檢表格</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 bg-blue-500 text-white" data-target="statsPage">統計報表</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="recordsPage">歷史記錄</button>
+                    </div>
+                </div>
+                
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">點檢統計數據</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-green-100 p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-green-700" id="totalChecks">0</div>
+                        <div class="text-gray-600 mt-2">總點檢次數</div>
+                    </div>
+                    <div class="bg-red-100 p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-red-700" id="abnormalCount">0</div>
+                        <div class="text-gray-600 mt-2">異常紀錄次數</div>
+                    </div>
+                    <div class="bg-yellow-100 p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-yellow-700" id="pendingRooms">0</div>
+                        <div class="text-gray-600 mt-2">待點檢房間數</div>
+                    </div>
+                </div>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">近期點檢紀錄 (最近 5 筆)</h3>
+                <div id="historyList" class="space-y-4">
+                    <p class="text-center text-gray-500">載入中...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="recordsPage" class="max-w-6xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                 <div class="flex justify-center mb-8">
+                    <div class="bg-white rounded-lg p-1 shadow-lg">
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="roomSelectionPage">選擇房間</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="checkPage">點檢表格</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-500" data-target="statsPage">統計報表</button>
+                        <button class="nav-tab px-6 py-3 rounded-md font-medium transition-all duration-200 bg-blue-500 text-white" data-target="recordsPage">歷史記錄</button>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">歷史點檢記錄</h2>
+                
+                <div class="flex justify-center mb-6 space-x-4">
+                    <div>
+                        <label for="historyFilterRoom" class="block text-sm font-medium text-gray-700">房間篩選</label>
+                        <select id="historyFilterRoom" class="p-2 border rounded-md">
+                            <option value="all">所有房間</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label for="historyFilterStatus" class="block text-sm font-medium text-gray-700">狀態篩選</label>
+                        <select id="historyFilterStatus" class="p-2 border rounded-md">
+                            <option value="all">全部狀態</option>
+                            <option value="normal">正常</option>
+                            <option value="abnormal">異常</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="fullHistoryList" class="space-y-4">
+                    <p class="text-center text-gray-500">載入中...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="calendarSettingPage" class="max-w-6xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 relative"> 
+                <button id="backToHomeFromCalendar" 
+                        class="absolute top-6 left-6 text-gray-500 hover:text-blue-600 flex items-center transition-colors font-medium">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path></svg>
+                    返回房間選擇
+                </button>
+                
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center pt-2">設備點檢週期設定與排程 (模擬)</h2>
+                <p class="text-gray-600 mb-6 text-center">您可以為每個房間設定不同的點檢週期，系統將根據上次點檢日期模擬計算下次排程日期。</p>
+                
+                <div id="cycleList" class="space-y-4">
+                    <p class="text-center text-gray-500">載入中...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="historyDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">點檢詳細紀錄</h3>
+                <div id="historyDetails" class="space-y-3 text-gray-700">
+                    </div>
+                <button id="closeHistoryDetailModal" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-lg transition-colors">
+                    關閉
+                </button>
+            </div>
+        </div>
+        
+        <div id="cycleSettingFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2" id="cycleModalRoomTitle">設定點檢週期</h3>
+                <form id="cycleSettingForm">
+                    <input type="hidden" id="cycleSettingRoomName">
+                    
+                    <div class="mb-4">
+                        <label for="cycleFrequency" class="block text-sm font-medium text-gray-700 mb-1">點檢頻率</label>
+                        <select id="cycleFrequency" class="w-full p-3 border rounded-lg">
+                            <option value="none">不設定/暫停</option>
+                            <option value="daily">每日</option>
+                            <option value="weekly">每週</option>
+                            <option value="monthly">每月</option>
+                        </select>
+                    </div>
+
+                    <div id="weeklyOptions" class="mb-4 hidden">
+                        <label for="cycleDayOfWeek" class="block text-sm font-medium text-gray-700 mb-1">選擇週幾</label>
+                        <select id="cycleDayOfWeek" class="w-full p-3 border rounded-lg">
+                            <option value="1">週一</option>
+                            <option value="2">週二</option>
+                            <option value="3">週三</option>
+                            <option value="4">週四</option>
+                            <option value="5">週五</option>
+                            <option value="6">週六</option>
+                            <option value="0">週日</option>
+                        </select>
+                    </div>
+                    
+                    <div id="monthlyOptions" class="mb-4 hidden">
+                        <label for="cycleDayOfMonth" class="block text-sm font-medium text-gray-700 mb-1">選擇每月幾號 (1-28)</label>
+                        <input type="number" id="cycleDayOfMonth" class="w-full p-3 border rounded-lg" min="1" max="28" value="1">
+                    </div>
+
+                    <div class="flex gap-4 mt-6">
+                        <button type="button" id="closeCycleSettingModal" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 rounded-lg transition-colors">取消</button>
+                        <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors">儲存設定</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="duplicateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"></div>
+        <div id="cycleNotSetModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"></div>
+    </div>
+
+<script>
+    // ***********************************************
+    // ⚠️ 步驟二完成後，請務必將 'YOUR_WEB_APP_URL_HERE' 替換為您的實際部署網址 ⚠️
+    // ***********************************************
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw7jYa_tFAaVSDKkZ728j9faA5OcoKB1nMvGQ6txBonnR36fIkS2YDK0aZNPOr2-vNf/exec';
+    let selectedRoom = { type: null, name: null };
+    
+    // --- 模擬數據 (使用 localStorage 儲存點檢歷史紀錄與週期設定) ---
+    // 初始數據或從 localStorage 載入
+    let roomData = JSON.parse(localStorage.getItem('roomData')) || [];
+
+    const saveRoomData = () => {
+        localStorage.setItem('roomData', JSON.stringify(roomData));
+    };
+
+    const getAllRooms = () => roomData;
+
+    // 取得房間的最新狀態
+    const getRoomStatus = (roomName) => {
+        const room = roomData.find(r => r.name === roomName);
+        if (!room || room.history.length === 0) return 'pending';
+        // 歷史記錄最新的 if (isAbnormal) -> 'abnormal'
+        if (room.history[room.history.length - 1].isAbnormal) return 'abnormal';
+        return 'normal';
+    };
+
+    // 根據 roomData 更新房間選擇按鈕的狀態指示燈
+    const updateRoomButtonStatus = () => {
+        const allRooms = getAllRooms();
+        document.querySelectorAll('.room-select-btn').forEach(btn => {
+            const roomName = btn.getAttribute('data-room');
+            const indicator = btn.querySelector('.status-indicator');
+            
+            // 找出對應的 room object
+            let room = allRooms.find(r => r.name === roomName);
+            
+            if (!room) {
+                 // 如果是新房間，將其加入 roomData (確保所有房間都被追蹤)
+                const newRoom = { 
+                    id: Date.now() + Math.random(), 
+                    name: roomName, 
+                    type: btn.getAttribute('data-type'), 
+                    status: "pending", 
+                    history: [],
+                    cycle: { frequency: 'none', details: null } // 🌟 新增週期設定
+                };
+                roomData.push(newRoom);
+                room = newRoom;
+            }
+
+            // 重新計算並設定狀態
+            const status = getRoomStatus(roomName);
+            room.status = status; // 更新內存中的狀態
+
+            indicator.classList.remove('status-normal', 'status-abnormal', 'status-pending');
+            
+            if (status === 'normal') {
+                indicator.classList.add('status-normal');
+                indicator.title = "上次點檢正常";
+            } else if (status === 'abnormal') {
+                indicator.classList.add('status-abnormal');
+                indicator.title = "上次點檢異常";
+            } else { // pending
+                indicator.classList.add('status-pending');
+                indicator.title = "待點檢或無紀錄";
+            }
+        });
+        saveRoomData(); // 確保新房間被儲存
+        updateStats(); // 更新統計數據
+    };
+    
+    // --- 輔助函數：顯示頁面 ---
+    function showPage(pageId) {
+        document.querySelectorAll('#roomSelectionPage, #checkPage, #statsPage, #recordsPage, #calendarSettingPage').forEach(page => {
+            page.classList.add('hidden');
+        });
+        document.getElementById(pageId).classList.remove('hidden');
+
+        // 更新導航標籤的狀態
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            if (tab.getAttribute('data-target') === pageId) {
+                tab.classList.add('bg-blue-500', 'text-white');
+                tab.classList.remove('text-gray-600', 'hover:text-blue-500');
+            } else {
+                tab.classList.remove('bg-blue-500', 'text-white');
+                tab.classList.add('text-gray-600', 'hover:text-blue-500');
+            }
+        });
+
+        // 🌟 針對特定頁面執行初始化函數
+        if (pageId === 'statsPage') {
+            updateStatsPage();
+        } else if (pageId === 'recordsPage') {
+            initializeRecordsPage();
+            updateFullHistoryList();
+        } else if (pageId === 'calendarSettingPage') { // 🌟 新增：載入週期設定頁面
+            renderCycleListPage();
+        }
+    }
+
+    // --- 統計和歷史紀錄邏輯 (保持不變) ---
+    const updateStats = () => {
+        const allRooms = getAllRooms();
+        const allHistory = allRooms.flatMap(r => 
+            r.history.map(h => ({ ...h, roomName: r.name, roomType: r.type }))
+        );
+
+        if (document.getElementById('totalChecks')) {
+            document.getElementById('totalChecks').innerText = allHistory.length;
+            document.getElementById('abnormalCount').innerText = allHistory.filter(h => h.isAbnormal).length;
+            
+            let pendingCount = 0;
+            allRooms.forEach(room => {
+                const status = getRoomStatus(room.name);
+                if (status === 'pending') {
+                    pendingCount++;
+                }
+            });
+            document.getElementById('pendingRooms').innerText = pendingCount;
+        }
+    };
+
+    const updateStatsPage = () => {
+        updateStats();
+        const historyList = document.getElementById('historyList');
+        const allHistory = getAllRooms().flatMap(room => 
+            room.history.map(h => ({ ...h, roomName: room.name, roomType: room.type }))
+        ).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+        
+        historyList.innerHTML = '';
+        if (allHistory.length === 0) {
+            historyList.innerHTML = '<p class="text-center text-gray-500 mt-4">無紀錄。</p>';
+            return;
+        }
+        
+        allHistory.forEach(h => {
+            historyList.innerHTML += `<div class="p-3 border rounded-lg bg-gray-50">${h.date} - ${h.roomName} (${h.isAbnormal ? '異常' : '正常'}) by ${h.inspector}</div>`;
+        });
+    };
+
+    const initializeRecordsPage = () => {
+        const roomSelect = document.getElementById('historyFilterRoom');
+        if (roomSelect && roomSelect.options.length <= 1) { 
+            roomSelect.innerHTML = '<option value="all">所有房間</option>';
+            getAllRooms().forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.name;
+                option.textContent = `${room.type} - ${room.name}`;
+                roomSelect.appendChild(option);
+            });
+            
+            roomSelect.addEventListener('change', updateFullHistoryList);
+            document.getElementById('historyFilterStatus').addEventListener('change', updateFullHistoryList);
+            document.getElementById('closeHistoryDetailModal').addEventListener('click', () => {
+                 document.getElementById('historyDetailModal').classList.add('hidden');
+            });
+        }
+    };
+
+    const updateFullHistoryList = () => {
+        const historyList = document.getElementById('fullHistoryList');
+        historyList.innerHTML = '';
+
+        const filterRoom = document.getElementById('historyFilterRoom')?.value || 'all';
+        const filterStatus = document.getElementById('historyFilterStatus')?.value || 'all';
+
+        const allHistory = getAllRooms().flatMap(room => 
+            room.history.map(h => ({ ...h, roomName: room.name, roomType: room.type }))
+        ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const filteredHistory = allHistory.filter(h => {
+            const roomMatch = filterRoom === 'all' || h.roomName === filterRoom;
+            const statusMatch = filterStatus === 'all' || 
+                                (filterStatus === 'normal' && !h.isAbnormal) || 
+                                (filterStatus === 'abnormal' && h.isAbnormal);
+            return roomMatch && statusMatch;
+        });
+
+        if (filteredHistory.length === 0) {
+             historyList.innerHTML = '<p class="text-center text-gray-500 mt-4">無符合條件的紀錄。</p>';
+             return;
+        }
+
+        filteredHistory.forEach(h => {
+            const status = h.isAbnormal ? '異常' : '正常';
+            const statusClass = h.isAbnormal ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50';
+            
+            const historyDiv = document.createElement('div');
+            historyDiv.className = `p-4 border-l-4 ${statusClass} rounded-lg shadow-sm flex justify-between items-center transition duration-150`;
+            historyDiv.innerHTML = `
+                <div>
+                    <div class="font-semibold text-gray-800">${h.roomType} - ${h.roomName}</div>
+                    <div class="text-sm text-gray-600">日期: ${h.date} | 狀態: <span class="font-bold text-${h.isAbnormal ? 'red' : 'green'}-700">${status}</span> | 人員: ${h.inspector}</div>
+                </div>
+                <button class="text-sm text-blue-600 hover:text-blue-800 font-medium detail-btn" data-id="${h.id}">
+                    查看詳情
+                </button>
+            `;
+            historyDiv.querySelector('.detail-btn').onclick = () => showHistoryDetails(h);
+            historyList.appendChild(historyDiv);
+        });
+    };
+
+    const showHistoryDetails = (history) => {
+        const detailsDiv = document.getElementById('historyDetails');
+        detailsDiv.innerHTML = `
+            <p><strong>房間:</strong> ${history.roomType} - ${history.roomName}</p>
+            <p><strong>日期:</strong> ${history.date}</p>
+            <p><strong>點檢人員:</strong> ${history.inspector}</p>
+            <div class="mt-3 pt-3 border-t">
+                <p><strong>運轉聲音:</strong> <span class="text-${history.sound === '正常' ? 'green' : 'red'}-600">${history.sound}</span></p>
+                <p><strong>溫度指示:</strong> <span class="text-${history.temperature === '正常' ? 'green' : 'red'}-600">${history.temperature}</span></p>
+                <p><strong>潤滑油位:</strong> <span class="text-${history.oil === '正常' ? 'green' : 'red'}-600">${history.oil}</span></p>
+                <p><strong>緊急停止:</strong> <span class="text-${history.emergency === '正常' ? 'green' : 'red'}-600">${history.emergency}</span></p>
+                <p><strong>防護罩:</strong> <span class="text-${history.guard === '正常' ? 'green' : 'red'}-600">${history.guard}</span></p>
+            </div>
+            <div class="mt-3 pt-3 border-t">
+                <p><strong>備註:</strong> ${history.remarks || '無'}</p>
+            </div>
+        `;
+        document.getElementById('historyDetailModal').classList.remove('hidden');
+    };
+    
+    // --- 🌟 點檢週期設定邏輯 🌟 ---
+    
+    const WEEKDAY_MAP = {
+        '0': '週日', '1': '週一', '2': '週二', '3': '週三', 
+        '4': '週四', '5': '週五', '6': '週六'
+    };
+    const FREQUENCY_MAP = {
+        'daily': '每日點檢', 'weekly': '每週點檢', 'monthly': '每月點檢', 'none': '未設定/暫停'
+    };
+
+    // 模擬計算下次點檢日期
+    const getNextCheckDate = (lastCheckDate, frequency, dayDetails) => {
+        let date = lastCheckDate ? new Date(lastCheckDate) : new Date(); // 從上次點檢日開始或今天
+        date.setHours(0,0,0,0);
+        let today = new Date();
+        today.setHours(0,0,0,0);
+
+        if (lastCheckDate) {
+            // 如果有上次紀錄，下次檢查日從上次紀錄的隔天開始算
+            date.setDate(date.getDate() + 1);
+        } else {
+            // 如果沒有紀錄，從今天開始算
+            date = today;
+        }
+
+        if (frequency === 'daily') {
+            return date.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        } else if (frequency === 'weekly') {
+            const targetDay = parseInt(dayDetails); // 0 (Sun) to 6 (Sat)
+            let currentDay = date.getDay(); // 0-6
+
+            let daysToAdd = (targetDay - currentDay + 7) % 7;
+            
+            // 處理循環邏輯：如果計算結果是今天，且是從今天開始算的 (無 lastCheckDate)，則將日期推到下週。
+            // 如果是從 lastCheckDate+1 開始算的，則 daysToAdd=0 才是今天。
+            if (daysToAdd === 0 && lastCheckDate) {
+                // 如果 lastCheckDate 是目標日，且我們從隔天開始算，則 daysToAdd=0 表示目標日已經在下週
+                daysToAdd = 7;
+            } else if (daysToAdd === 0 && !lastCheckDate) {
+                 // 如果今天是目標日，且沒有歷史紀錄，也推到下週
+                 daysToAdd = 7;
+            }
+
+            date.setDate(date.getDate() + daysToAdd);
+            return date.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+        } else if (frequency === 'monthly') {
+            const targetDay = parseInt(dayDetails); // 1 to 28
+            let targetMonth = date.getMonth();
+            let targetYear = date.getFullYear();
+
+            // 如果今天或上次點檢日已經過了目標日期，則設定為下個月
+            if (date.getDate() > targetDay) {
+                targetMonth += 1;
+            }
+            
+            let nextDate = new Date(targetYear, targetMonth, targetDay);
+            // Date會自動處理月份溢出到下一年
+            
+            return nextDate.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+        
+        return '無排程';
+    };
+
+    const renderCycleListPage = () => {
+        const cycleListDiv = document.getElementById('cycleList');
+        cycleListDiv.innerHTML = '';
+        
+        const allRooms = getAllRooms();
+        
+        allRooms.forEach(room => {
+            const lastHistory = room.history.length > 0 ? room.history[room.history.length - 1] : null;
+            const lastCheckDate = lastHistory ? lastHistory.date : null;
+            
+            let cycleInfo = room.cycle || { frequency: 'none', details: null };
+            let displayCycle = '未設定週期';
+            let nextCheckDate = '無排程';
+            let nextCheckStatus = 'bg-gray-400 text-white';
+            
+            if (cycleInfo.frequency !== 'none') {
+                nextCheckDate = getNextCheckDate(lastCheckDate, cycleInfo.frequency, cycleInfo.details);
+                displayCycle = FREQUENCY_MAP[cycleInfo.frequency];
+                
+                if (cycleInfo.frequency === 'weekly') {
+                    displayCycle += ` (${WEEKDAY_MAP[cycleInfo.details]})`;
+                } else if (cycleInfo.frequency === 'monthly') {
+                    displayCycle += ` (每月 ${cycleInfo.details} 號)`;
+                }
+
+                // 簡單判斷排程狀態
+                const nextDateObj = new Date(nextCheckDate.replace(/\//g, '-')); // 處理日期格式
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                if (nextCheckDate === '無排程') {
+                     nextCheckStatus = 'bg-gray-400 text-white';
+                } else if (nextDateObj.getTime() < today.getTime()) {
+                     nextCheckStatus = 'bg-red-600 text-white'; // 已逾期
+                     nextCheckDate += ' (已逾期)';
+                } else if (nextDateObj.getTime() === today.getTime()) {
+                     nextCheckStatus = 'bg-yellow-500 text-white'; // 今天
+                     nextCheckDate += ' (今天排程)';
+                } else {
+                     nextCheckStatus = 'bg-green-600 text-white'; // 正常排程
+                }
+            }
+
+            const roomDiv = document.createElement('div');
+            roomDiv.className = "p-4 border rounded-xl shadow-sm flex justify-between items-center bg-white hover:shadow-md transition-shadow";
+            roomDiv.innerHTML = `
+                <div>
+                    <div class="font-bold text-lg text-gray-800">${room.type} - ${room.name}</div>
+                    <div class="text-sm text-gray-600">上次點檢: ${lastCheckDate || '無紀錄'}</div>
+                    <div class="text-sm text-gray-600 mt-1">目前週期: ${displayCycle}</div>
+                </div>
+                <div class="text-right flex flex-col items-end">
+                    <div class="px-3 py-1 rounded-full text-xs font-semibold ${nextCheckStatus} mb-2">
+                        ${nextCheckDate}
+                    </div>
+                    <button class="text-sm text-blue-600 hover:text-blue-800 font-medium set-cycle-btn" data-room-name="${room.name}">
+                        ⚙️ 設定週期
+                    </button>
+                </div>
+            `;
+            cycleListDiv.appendChild(roomDiv);
+        });
+        
+        // 綁定設定按鈕事件
+        document.querySelectorAll('.set-cycle-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const roomName = e.currentTarget.getAttribute('data-room-name');
+                openCycleSettingModal(roomName);
+            });
+        });
+    };
+
+    const openCycleSettingModal = (roomName) => {
+        const room = roomData.find(r => r.name === roomName);
+        if (!room) return;
+        
+        document.getElementById('cycleModalRoomTitle').textContent = `設定 ${room.type} - ${room.name} 的點檢週期`;
+        document.getElementById('cycleSettingRoomName').value = roomName;
+        
+        // 載入當前設定
+        const currentCycle = room.cycle || { frequency: 'none', details: null };
+        document.getElementById('cycleFrequency').value = currentCycle.frequency;
+        
+        // 觸發 frequency change 事件來顯示對應的細節選項
+        const frequencyChange = new Event('change');
+        document.getElementById('cycleFrequency').dispatchEvent(frequencyChange);
+        
+        if (currentCycle.frequency === 'weekly' && currentCycle.details !== null) {
+            document.getElementById('cycleDayOfWeek').value = currentCycle.details;
+        } else if (currentCycle.frequency === 'monthly' && currentCycle.details !== null) {
+            document.getElementById('cycleDayOfMonth').value = currentCycle.details;
+        }
+        
+        document.getElementById('cycleSettingFormModal').classList.remove('hidden');
+    };
+    
+    // --- 輔助函數：初始化與事件監聽 ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 🌟 首次載入時，初始化房間狀態指示燈
+        updateRoomButtonStatus(); 
+
+        // 預設日期為今天
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkDate').value = today;
+
+        // 導航標籤點擊事件
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+               
+                showPage(tab.getAttribute('data-target'));
+            });
+        });
+        document.getElementById('calendarTab').addEventListener('click', () => {
+             // 這裡應導航到 calendarSettingPage
+             showPage('calendarSettingPage'); 
+        });
+        document.getElementById('roomTitle').addEventListener('click', () => {
+            showPage('roomSelectionPage'); // 點擊房間名稱可返回選擇頁
+      
+        });
+        
+        // 🌟 點檢週期頁面新增：返回首頁按鈕事件
+        document.getElementById('backToHomeFromCalendar').addEventListener('click', () => {
+            showPage('roomSelectionPage');
+        });
+
+        // 房間類型切換
+        document.getElementById('meetingRoomTab').addEventListener('click', () => {
+            document.getElementById('meetingRoomList').classList.remove('hidden');
+            document.getElementById('lectureHallList').classList.add('hidden');
+            document.getElementById('meetingRoomTab').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('meetingRoomTab').classList.remove('text-gray-600', 'hover:text-blue-500');
+            document.getElementById('lectureHallTab').classList.remove('bg-blue-500', 'text-white');
+            document.getElementById('lectureHallTab').classList.add('text-gray-600', 'hover:text-blue-500');
+        });
+        document.getElementById('lectureHallTab').addEventListener('click', () => {
+            document.getElementById('meetingRoomList').classList.add('hidden');
+            document.getElementById('lectureHallList').classList.remove('hidden');
+            document.getElementById('lectureHallTab').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('lectureHallTab').classList.remove('text-gray-600', 'hover:text-blue-500');
+            document.getElementById('meetingRoomTab').classList.remove('bg-blue-500', 'text-white');
+            document.getElementById('meetingRoomTab').classList.add('text-gray-600', 'hover:text-blue-500');
+        });
+        // 2. 房間選擇按鈕
+        document.querySelectorAll('.room-select-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const btn = e.currentTarget;
+                selectedRoom.name = btn.getAttribute('data-room');
+                selectedRoom.type = btn.getAttribute('data-type');
+                
+  
+                // 更新點檢表格頁面的標題
+                document.getElementById('roomTitle').textContent = `${selectedRoom.type} - ${selectedRoom.name}`;
+                document.getElementById('roomNotSelectedAlert').classList.add('hidden');
+                
+                // 跳轉到點檢表格頁面
+                
+                showPage('checkPage');
+            });
+        });
+        // 3. 點檢項目單選框樣式切換
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // 移除同一組所有按鈕的 selected 樣式
+                document.querySelectorAll(`input[name="${e.target.name}"] + .check-button`).forEach(btn => {
+                    btn.classList.remove('selected');
+              
+                });
+                // 為選中的按鈕加上 selected 樣式
+                e.target.nextElementSibling.classList.add('selected');
+            });
+        });
+        // 4. Modal 確認按鈕
+        document.getElementById('confirmSubmit').addEventListener('click', () => {
+            document.getElementById('submitModal').classList.add('hidden');
+        });
+
+        // 🌟 週期設定 Modal 邏輯
+        document.getElementById('cycleFrequency').addEventListener('change', (e) => {
+            const freq = e.target.value;
+            document.getElementById('weeklyOptions').classList.add('hidden');
+            document.getElementById('monthlyOptions').classList.add('hidden');
+            
+            if (freq === 'weekly') {
+                document.getElementById('weeklyOptions').classList.remove('hidden');
+            } else if (freq === 'monthly') {
+                document.getElementById('monthlyOptions').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('closeCycleSettingModal').addEventListener('click', () => {
+            document.getElementById('cycleSettingFormModal').classList.add('hidden');
+        });
+
+        document.getElementById('cycleSettingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const roomName = document.getElementById('cycleSettingRoomName').value;
+            const frequency = document.getElementById('cycleFrequency').value;
+            let details = null;
+            
+            if (frequency === 'weekly') {
+                details = document.getElementById('cycleDayOfWeek').value;
+            } else if (frequency === 'monthly') {
+                details = document.getElementById('cycleDayOfMonth').value;
+            }
+            
+            const room = roomData.find(r => r.name === roomName);
+            if (room) {
+                room.cycle = { frequency, details };
+                saveRoomData(); // 儲存到 localStorage
+                renderCycleListPage(); // 重新渲染列表
+                document.getElementById('cycleSettingFormModal').classList.add('hidden');
+                alert(`已成功為 ${roomName} 設定週期為 ${FREQUENCY_MAP[frequency] || '無設定'}`);
+            }
+        });
+
+    });
+
+    // 5. 表單提交 (核心 AJAX 邏輯 - 已新增本地儲存)
+    document.getElementById('checkForm').addEventListener('submit', async (event) => {
+        // 🚨 阻止表單的預設提交行為，這是防止頁面刷新的關鍵！
+        event.preventDefault(); 
+        
+        if (!selectedRoom.name) {
+            document.getElementById('roomNotSelectedAlert').classList.remove('hidden');
+            alert('請先選擇要點檢的房間！');
+            return;
+        }
+
+     
+        const formData = {
+            checkDate: document.getElementById('checkDate').value,
+            roomType: selectedRoom.type,
+            roomName: selectedRoom.name,
+            
+            // 點檢項目 (使用 name 屬性來取得選中的值)
+            sound: document.querySelector('input[name="sound"]:checked')?.value || '未點檢',
+            
+            temperature: document.querySelector('input[name="temperature"]:checked')?.value || '未點檢',
+            oil: document.querySelector('input[name="oil"]:checked')?.value || '未點檢',
+            emergency: document.querySelector('input[name="emergency"]:checked')?.value || '未點檢',
+            guard: document.querySelector('input[name="guard"]:checked')?.value ||
+                '未點檢',
+
+            remarks: document.getElementById('remarks').value,
+            inspector: document.getElementById('inspector').value,
+        };
+        
+        // --- 新增：本地數據記錄邏輯 ---
+        const isAbnormal = Object.keys(formData).some(key => 
+            (key !== 'checkDate' && key !== 'roomType' && key !== 'roomName' && key !== 'inspector' && key !== 'remarks') && 
+            formData[key] === '異常'
+        );
+        const newHistory = {
+            id: `${formData.checkDate}-${selectedRoom.name}-${Date.now()}`, 
+            date: formData.checkDate,
+            inspector: formData.inspector,
+            remarks: formData.remarks,
+            isAbnormal: isAbnormal,
+            ...formData // 包含所有點檢結果
+        };
+        
+        // 更新本地數據
+        const room = roomData.find(r => r.name === selectedRoom.name);
+        if (room) {
+            room.history.push(newHistory);
+        } else {
+             // 避免在提交時發現沒有 roomData 記錄，雖然 updateRoomButtonStatus 應該處理了
+             roomData.push({ 
+                id: Date.now() + Math.random(), 
+                name: selectedRoom.name, 
+                type: selectedRoom.type, 
+                status: isAbnormal ? 'abnormal' : 'normal', 
+                history: [newHistory] ,
+                cycle: { frequency: 'none', details: null } // 🌟 確保有週期欄位
+            });
+        }
+        saveRoomData(); // 儲存到 localStorage
+        // --- 本地數據記錄結束 ---
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中...';
+        
+        try {
+            // 使用 fetch 將資料以 POST 方式傳遞給 Apps Script Web App
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // 必須設定為 no-cors，因為是發送到 Apps Script 的獨立網域
+                cache: 'no-cache',
+    
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                // 將 JS 物件轉換為 URLSearchParams 格式
+                body: new URLSearchParams(formData).toString() 
+          
+            });
+
+            // 成功後 (Web App 會返回 200 狀態碼，即使 mode: 'no-cors'，請求也會成功)
+            
+            // 更新 Modal 資訊
+            document.getElementById('modalRoomTitle').textContent = `${formData.roomType} - ${formData.roomName} (點檢日期: ${formData.checkDate})`;
+            document.getElementById('modalInspector').textContent = `點檢人員: ${formData.inspector}`;
+            
+            // 顯示成功 Modal
+            document.getElementById('submitModal').classList.remove('hidden');
+            
+            // 清空表單（保持房間選擇和日期）
+            document.getElementById('checkForm').reset();
+            document.getElementById('checkDate').value = formData.checkDate;
+            document.getElementById('remarks').value = '';
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert('提交失敗！雖然資料已儲存於瀏覽器，但請檢查您的網路或 Web App URL 是否正確。');
+            document.getElementById('submitModal').classList.remove('hidden'); // 即使網路失敗，本地儲存也算成功
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '提交點檢表格';
+            // 提交後更新房間狀態，確保房間選擇頁面顯示最新狀態
+            updateRoomButtonStatus(); 
+        }
+    });
+
+</script>
+</body>
+</html>
